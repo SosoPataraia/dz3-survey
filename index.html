@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Оценка впечатлений при знакомстве</title>
+  <style>
+    body { font-family: system-ui, sans-serif; display: flex; min-height: 100vh;
+           align-items: center; justify-content: center; margin: 0; color: #333; }
+    a { color: #1a73e8; }
+  </style>
+</head>
+<body>
+  <p>Открываем опрос… Если ничего не происходит, <a id="go" href="#">нажмите сюда</a>.</p>
+
+  <script>
+    // Ссылки «для участников» с листа «Условия» (вставить после запуска build_forms.gs)
+    const FORMS = {
+      A: "https://docs.google.com/forms/d/e/ВСТАВИТЬ_A/viewform", // умеренная, без подтверждения
+      B: "https://docs.google.com/forms/d/e/ВСТАВИТЬ_B/viewform", // умеренная, с подтверждением
+      C: "https://docs.google.com/forms/d/e/ВСТАВИТЬ_C/viewform", // сильная, без подтверждения
+      D: "https://docs.google.com/forms/d/e/ВСТАВИТЬ_D/viewform"  // сильная, с подтверждением
+    };
+    const KEY = "dz3_condition";
+
+    // Равновероятный выбор одного из 4 условий (2^32 делится на 4, смещения нет)
+    function pickCondition() {
+      const keys = Object.keys(FORMS);
+      const r = new Uint32Array(1);
+      crypto.getRandomValues(r);
+      return keys[r[0] % keys.length];
+    }
+
+    // Повторный заход с того же браузера ведёт в то же условие, а не в новое
+    let cond = null;
+    try { cond = localStorage.getItem(KEY); } catch (e) {}
+    if (!cond || !FORMS[cond]) {
+      cond = pickCondition();
+      try { localStorage.setItem(KEY, cond); } catch (e) {}
+    }
+
+    const url = FORMS[cond];
+    document.getElementById("go").href = url;
+    location.replace(url);
+  </script>
+</body>
+</html>
